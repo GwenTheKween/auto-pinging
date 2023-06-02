@@ -73,7 +73,7 @@ def find_line_index(branch, all_lines):
     # if we did not return in the loop, it isn't in the list of lines
     return -1
 
-def start(args):
+def add(args):
     # Confirm that all required arguments were provided
     if args.time is None and args.email is None:
         print("time (how many weeks to wait) and email (mail-ID) are required to start tracking a patch")
@@ -112,8 +112,26 @@ def start(args):
     write_all_lines(saved_lines)
     return
 
-def reset(args):
-    print(f"resetting the timer for the branch {args.branch}")
+def ping(args):
+    lines = read_all_lines()
+    IDs = []
+    # calculate the branches that must be pinged
+    for l in lines:
+        branch, email, date = l.strip().split(',')
+        day, month, year = date.split('-')
+        date = datetime.date(int(year), int(month), int(day))
+        today = datetime.date.today()
+        if today < date:
+            print(f"skipping {branch}")
+            continue
+        IDs.append(branch if args.remind else email)
+
+    # do the pinging
+    if args.remind:
+        subprocess.run(['notify-send', f'ping: {IDs}'])
+    else:
+        raise NotImplementedError("not yet")
+    print(f"the following will be pinged: {IDs}")
 
 def remove(args):
     lines = read_all_lines()
@@ -134,7 +152,7 @@ def main():
     parser.add_argument("--email", "-e", required=False, help="The email ID that the script will use if the it pings automatically")
     parser.add_argument("--time", "-t", required=False, type=int, help="how long from now to ping/remind")
     parser.add_argument("--remind", "-r", required=False, action="store_true", help="should this script ping on its own or only send a reminder (using notify-send)?")
-    parser.add_argument("cmd", choices=["start", "reset", "remove"], help="Which command will be used.")
+    parser.add_argument("cmd", choices=["add", "ping", "remove"], help="Which command will be used.")
     args = parser.parse_args()
 
     missing = check_for_dependencies(args)
@@ -146,10 +164,10 @@ def main():
 
     first_setup ()
 
-    if args.cmd == "start":
-        start(args)
-    elif args.cmd == "reset":
-        reset(args)
+    if args.cmd == "add":
+        add(args)
+    elif args.cmd == "ping":
+        ping(args)
     elif args.cmd == "remove":
         remove(args)
     else:
