@@ -14,5 +14,6 @@ BRANCH_NAME is how the script finds patch series to inform the user that they ha
 EMAIL_ID is how the script know where to send a ping email, if one is to be  sent.
 PING_BY_DATE tells the cronjob when to start sending the pings.
 
-STRETCH GOAL:
+STRETCH GOALS:
     add an option to "pause" a ping, which skips the next time the patch would be pinged.
+    add an option to list patches
