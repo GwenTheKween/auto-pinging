@@ -36,9 +36,10 @@ def main():
     # Parse arguments given in the CLI call.
     parser = argparse.ArgumentParser(description="Utility to automate pinging - or ping reminders - of patches in development mailing lists.")
     parser.add_argument ("--dry-run", action="store_true", help="Do not run commands that change the state of the system, only print the commands that would be run")
-    parser.add_argument("--id", required=True, nargs=1)
-    parser.add_argument("--time", "-t", required=True, nargs=1)
-    parser.add_argument("--remind", "-r", required=False, action="store_true")
+    #The ID that my git aliases will use will be branch name, but it doesn't have to be
+    parser.add_argument("--id", required=True, nargs=1, help="the ID that will be used to identify this patch series")
+    parser.add_argument("--time", "-t", required=True, nargs=1, help="how long from now to ping/remind")
+    parser.add_argument("--remind", "-r", required=False, action="store_true", help="should this script ping on its own or only send a reminder (using notify-send)?")
     parser.add_argument("cmd", choices=["start", "reset", "remove"], help="Which command will be used.")
     args = parser.parse_args()
 
