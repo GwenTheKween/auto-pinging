@@ -27,15 +27,26 @@ def check_for_dependencies(args):
             not_found.append('git-send-email')
     return not_found
 
-def first_setup(path):
+def read_all_lines ():
+    l = []
+    with open(database, 'r') as f:
+        l = f.readlines()
+    return l
+
+def write_all_lines(lines):
+    with open(database, "w") as f:
+        for line in lines:
+            f.write(line)
+
+def first_setup():
     all_lines = []
     try:
-        f = open(path, 'r')
+        f = open(database, 'r')
         all_lines = f.readlines()
         f.close()
     except:
-        print(f"no file {path}. Creating an empty one")
-        f = open(path, "w")
+        print(f"no file {database}. Creating an empty one")
+        f = open(database, "w")
         f.close()
 
     # Check if there is corruption in the file
@@ -49,7 +60,7 @@ def first_setup(path):
             dic[b] = 1
     for b, count in dic.items():
         if count > 1:
-            print(f"branch {b} is being tracked {count} times! Fix this by manually editing {path}")
+            print(f"branch {b} is being tracked {count} times! Fix this by manually editing {database}")
 
 # given a certain id BRANCH, find the index containing the related line
 def find_line_index(branch, all_lines):
@@ -63,12 +74,21 @@ def find_line_index(branch, all_lines):
     return -1
 
 def start(args):
-    # First check if the branch is already being monitored.
+    # Confirm that all required arguments were provided
+    if args.time is None and args.email is None:
+        print("time (how many weeks to wait) and email (mail-ID) are required to start tracking a patch")
+        return
+    elif args.time is None:
+        print("time (how many weeks to wait) is required to start the tracking")
+        return
+    elif args.email is None:
+        print("Email (mail-ID) is required to track a patch")
+        return
+
+    # Check if the branch is already being monitored.
     repeat = 0
     existing = ""
-    saved_lines = []
-    with open(database, "r") as f:
-        saved_lines = f.readlines()
+    saved_lines = read_all_lines()
     index = find_line_index(args.branch, saved_lines)
 
     # Now calculate the line that will be stored
@@ -89,16 +109,20 @@ def start(args):
 
     # Add the line to the saved_lines, then write them all to the file
     saved_lines.append(new_line)
-    with open(database, "w") as f:
-        for line in saved_lines:
-            f.write(line)
+    write_all_lines(saved_lines)
     return
 
 def reset(args):
     print(f"resetting the timer for the branch {args.branch}")
 
 def remove(args):
-    print(f"removing the timer for branch {args.branch}")
+    lines = read_all_lines()
+    ind = find_line_index(args.branch, lines)
+    if ind < 0:
+        print(f"branch {args.branch} is not being tracked")
+        return
+    del lines[ind]
+    write_all_lines(lines)
 
 def main():
     global database
@@ -107,8 +131,8 @@ def main():
     parser.add_argument ("--dry-run", action="store_true", help="Do not run commands that change the state of the system, only print the commands that would be run")
     #The ID that my git aliases will use will be branch name, but it doesn't have to be
     parser.add_argument("--branch", "-b", required=True, help="the identifier of the patch series. Likely the branch that contains the commits.")
-    parser.add_argument("--email", "-e", required=True, help="The email ID that the script will use if the it pings automatically")
-    parser.add_argument("--time", "-t", required=True, type=int, help="how long from now to ping/remind")
+    parser.add_argument("--email", "-e", required=False, help="The email ID that the script will use if the it pings automatically")
+    parser.add_argument("--time", "-t", required=False, type=int, help="how long from now to ping/remind")
     parser.add_argument("--remind", "-r", required=False, action="store_true", help="should this script ping on its own or only send a reminder (using notify-send)?")
     parser.add_argument("cmd", choices=["start", "reset", "remove"], help="Which command will be used.")
     args = parser.parse_args()
@@ -120,14 +144,14 @@ def main():
 
     database = os.getenv('HOME')+'/.patches.csv'
 
-    first_setup (database)
+    first_setup ()
 
     if args.cmd == "start":
         start(args)
     elif args.cmd == "reset":
         reset(args)
     elif args.cmd == "remove":
-        reset(args)
+        remove(args)
     else:
         raise NotImplementedError("the subcommand does not seem to be implemented")
 
