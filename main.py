@@ -62,6 +62,18 @@ def first_setup():
         if count > 1:
             print(f"branch {b} is being tracked {count} times! Fix this by manually editing {database}")
 
+    # Check if there is a cronjob for this script already
+    output = subprocess.run(['crontab', '-l'], stdout=subprocess.PIPE)
+    output = output.stdout.decode('utf-8')
+    with open('cronjob') as f:
+        cron = f.read()
+    if cron not in output:
+        if output != "" and output[-1] != '\n':
+            output += '\n'
+        output += cron
+        p = subprocess.Popen(['crontab', '-'], stdin=subprocess.PIPE)
+        p.communicate(input=output.encode('utf-8'))
+
 # given a certain id BRANCH, find the index containing the related line
 def find_line_index(branch, all_lines):
     ind = 0
