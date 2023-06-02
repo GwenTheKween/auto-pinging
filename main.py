@@ -2,6 +2,9 @@
 import argparse
 import subprocess
 import os
+import datetime
+
+database = ""
 
 def check_for_dependencies(args):
     deps = []
@@ -34,6 +37,47 @@ def first_setup(path):
         f.close()
 
 def start(args):
+    # First check if the branch is already being monitored.
+    repeat = 0
+    existing = ""
+    saved_lines = []
+    with open(database, "r") as f:
+        saved_lines = f.readlines()
+    for line in saved_lines:
+        branch = line.split(',')[0]
+        if branch == args.branch:
+            repeat += 1
+            existing = line
+
+    # Now calculate the line that will be stored
+    ping_start = datetime.date.today() + datetime.timedelta(weeks = args.time)
+    ping_string = ping_start.strftime("%d-%m-%Y")
+    new_line = ','.join([args.branch, args.email, ping_string]) + '\n'
+
+    #Check for errors and if user wants overwrite (if needed)
+    if repeat > 1:
+        print(f"{args.branch} repeats {repeat} times. Please fix this manually by changing {database}")
+        return
+    elif repeat == 1:
+        ping=existing.split(',')[2]
+        opt = input(f"{args.branch} is already in being monitored, PING_START is {ping}overwrite? (y/n)")
+        if opt != 'y':
+            print("exiting.")
+            return
+        else:
+            print("overwritting")
+            new_lines = []
+            for line in saved_lines:
+                branch = line.split(',')[0]
+                if branch != args.branch:
+                    new_lines.append(line)
+            saved_lines = new_lines
+
+    # Add the line to the saved_lines, then write them all to the file
+    saved_lines.append(new_line)
+    with open(database, "w") as f:
+        for line in saved_lines:
+            f.write(line)
     return
 
 def reset(args):
@@ -43,6 +87,7 @@ def remove(args):
     print(f"removing the timer for branch {args.branch}")
 
 def main():
+    global database
     # Parse arguments given in the CLI call.
     parser = argparse.ArgumentParser(description="Utility to automate pinging - or ping reminders - of patches in development mailing lists.")
     parser.add_argument ("--dry-run", action="store_true", help="Do not run commands that change the state of the system, only print the commands that would be run")
