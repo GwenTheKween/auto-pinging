@@ -13,3 +13,6 @@ BRANCH_NAME, EMAIL_ID, PING_BY_DATE
 BRANCH_NAME is how the script finds patch series to inform the user that they have to be pinged (if in remind mode) and how they are identified to be removed. This is used to facilitate integration with git hooks.
 EMAIL_ID is how the script know where to send a ping email, if one is to be  sent.
 PING_BY_DATE tells the cronjob when to start sending the pings.
+
+STRETCH GOAL:
+    add an option to "pause" a ping, which skips the next time the patch would be pinged.
