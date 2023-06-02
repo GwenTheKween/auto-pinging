@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 import argparse
 import subprocess
+import os
 
 def check_for_dependencies(args):
-    deps = ['at']
+    deps = []
     if args.remind:
         deps += ['notify-send']
     else:
@@ -23,21 +24,31 @@ def check_for_dependencies(args):
             not_found.append('git-send-email')
     return not_found
 
+def first_setup(path):
+    try:
+        f = open(path, 'r')
+        f.close()
+    except:
+        print(f"no file {path}. Creating an empty one")
+        f = open(path, "w")
+        f.close()
+
 def start(args):
-    print(f"starting a timer for the branch {args.id}, which will go off in {args.time}")
+    print(f"starting a timer for the branch {args.branch}, which will go off in {args.time}")
 
 def reset(args):
-    print(f"resetting the timer for the branch {args.id}, setting a new ping in {args.time}")
+    print(f"resetting the timer for the branch {args.branch}, setting a new ping in {args.time}")
 
 def remove(args):
-    print(f"removing the timer for branch {args.id}")
+    print(f"removing the timer for branch {args.branch}")
 
 def main():
     # Parse arguments given in the CLI call.
     parser = argparse.ArgumentParser(description="Utility to automate pinging - or ping reminders - of patches in development mailing lists.")
     parser.add_argument ("--dry-run", action="store_true", help="Do not run commands that change the state of the system, only print the commands that would be run")
     #The ID that my git aliases will use will be branch name, but it doesn't have to be
-    parser.add_argument("--id", required=True, nargs=1, help="the ID that will be used to identify this patch series")
+    parser.add_argument("--branch", required=True, nargs=1, help="the identifier of the patch series. Likely the branch that contains the commits.")
+    parser.add_argument("--email", required=True, nargs=1, help="The email ID that the script will use if the it pings automatically")
     parser.add_argument("--time", "-t", required=True, nargs=1, help="how long from now to ping/remind")
     parser.add_argument("--remind", "-r", required=False, action="store_true", help="should this script ping on its own or only send a reminder (using notify-send)?")
     parser.add_argument("cmd", choices=["start", "reset", "remove"], help="Which command will be used.")
@@ -47,6 +58,10 @@ def main():
     if missing != []:
         print(f"Missing the following dependencies to run the script as requested: {missing}")
         return
+
+    database = os.getenv('HOME')+'/.patches.csv'
+
+    first_setup (database)
 
     if args.cmd == "start":
         start(args)
