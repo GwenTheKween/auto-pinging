@@ -14,6 +14,8 @@ BRANCH_NAME is how the script finds patch series to inform the user that they ha
 EMAIL_ID is how the script know where to send a ping email, if one is to be  sent.
 PING_BY_DATE tells the cronjob when to start sending the pings.
 
+User tweaking: the cronjob file by default send a ping email on mondays at 11 am. You can change that, and I suggest you do, otherwise if too many people send pings at once, servers can be overloaded or your patch just gets lost in the sea of pings.
+
 STRETCH GOALS:
     add an option to "pause" a ping, which skips the next time the patch would be pinged.
     add an option to list patches

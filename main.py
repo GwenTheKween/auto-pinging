@@ -7,7 +7,7 @@ import datetime
 database = ""
 
 def check_for_dependencies(args):
-    deps = []
+    deps = ['crontab']
     if args.remind:
         deps += ['notify-send']
     else:
@@ -128,7 +128,7 @@ def ping(args):
 
     # do the pinging
     if args.remind:
-        subprocess.run(['notify-send', f'ping: {IDs}'])
+        subprocess.run(['notify-send', f'ping: {IDs}', '-a', 'auto-ping'])
     else:
         raise NotImplementedError("not yet")
     print(f"the following will be pinged: {IDs}")
