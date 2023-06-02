@@ -35,21 +35,11 @@ def remove(args):
 def main():
     # Parse arguments given in the CLI call.
     parser = argparse.ArgumentParser(description="Utility to automate pinging - or ping reminders - of patches in development mailing lists.")
-
-    # Generic arguments that all subcommands use
     parser.add_argument ("--dry-run", action="store_true", help="Do not run commands that change the state of the system, only print the commands that would be run")
     parser.add_argument("--id", required=True, nargs=1)
     parser.add_argument("--time", "-t", required=True, nargs=1)
     parser.add_argument("--remind", "-r", required=False, action="store_true")
-
-    # testing if I can use this for subcommands
     parser.add_argument("cmd", choices=["start", "reset", "remove"], help="Which command will be used.")
-
-    ## Parsers for the subcommands
-    #subparsers = parser.add_subparser("subcommands")
-    #start_parser = subparsers.add_parser("start", help="start a timer to ping a given patch")
-    #reset_parser = subparsers.add_parser("reset", help="reset the timer for pinging the given patch")
-    #delete_parser = subparsers.add_parser("remove", help="remove the timer for pinging a patch")
     args = parser.parse_args()
 
     missing = check_for_dependencies(args)
