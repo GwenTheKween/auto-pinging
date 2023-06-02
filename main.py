@@ -34,10 +34,10 @@ def first_setup(path):
         f.close()
 
 def start(args):
-    print(f"starting a timer for the branch {args.branch}, which will go off in {args.time}")
+    return
 
 def reset(args):
-    print(f"resetting the timer for the branch {args.branch}, setting a new ping in {args.time}")
+    print(f"resetting the timer for the branch {args.branch}")
 
 def remove(args):
     print(f"removing the timer for branch {args.branch}")
@@ -47,9 +47,9 @@ def main():
     parser = argparse.ArgumentParser(description="Utility to automate pinging - or ping reminders - of patches in development mailing lists.")
     parser.add_argument ("--dry-run", action="store_true", help="Do not run commands that change the state of the system, only print the commands that would be run")
     #The ID that my git aliases will use will be branch name, but it doesn't have to be
-    parser.add_argument("--branch", required=True, nargs=1, help="the identifier of the patch series. Likely the branch that contains the commits.")
-    parser.add_argument("--email", required=True, nargs=1, help="The email ID that the script will use if the it pings automatically")
-    parser.add_argument("--time", "-t", required=True, nargs=1, help="how long from now to ping/remind")
+    parser.add_argument("--branch", "-b", required=True, help="the identifier of the patch series. Likely the branch that contains the commits.")
+    parser.add_argument("--email", "-e", required=True, help="The email ID that the script will use if the it pings automatically")
+    parser.add_argument("--time", "-t", required=True, type=int, help="how long from now to ping/remind")
     parser.add_argument("--remind", "-r", required=False, action="store_true", help="should this script ping on its own or only send a reminder (using notify-send)?")
     parser.add_argument("cmd", choices=["start", "reset", "remove"], help="Which command will be used.")
     args = parser.parse_args()
